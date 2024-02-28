@@ -1,3 +1,6 @@
 [submodule "gaussiansplatting/submodules/diff-gaussian-rasterization"]
 	path = gaussiansplatting/submodules/diff-gaussian-rasterization
 	url = https://github.com/ashawkey/diff-gaussian-rasterization
+[submodule "spic-e"]
+	path = spic-e
+	url = https://github.com/TAU-VAILab/spic-e
