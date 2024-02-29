@@ -105,24 +105,35 @@ class GaussianDreamer(BaseLift3DSystem):
                 file.write(writer.read())
     
     def shape(self):
-
+        # set up SPiC-E model
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         xm = load_model('transmitter', device=device)
         model = load_model('text300M', device=device)
-        model.load_state_dict(torch.load('./load/shapE_finetuned_with_330kdata.pth', map_location=device)['model_state_dict'])
+        model.wrapped.backbone.make_ctrl_layers()
+        model.wrapped.set_up_controlnet_cond()
+        #model.load_state_dict(torch.load('./load/shapE_finetuned_with_330kdata.pth', map_location=device)['model_state_dict'])
+        model.load_state_dict(torch.load('/storage/etaisella/repos/SpicyGaussianDreamer/load/model_final.pt'))
         diffusion = diffusion_from_config_shape(load_config('diffusion'))
 
+        # load guidance shape
+        guidance_path = '/storage/etaisella/repos/SpicyGaussianDreamer/spic-e/demo/latent_inference/demo_latent.pt'
+        print(f"Loading guidance shape from {guidance_path}")
+        guidance_shape = torch.load(guidance_path)
+
         batch_size = 1
-        guidance_scale = 15.0
+        guidance_scale = 7.5
         prompt = str(self.cfg.prompt_processor.prompt)
         print('prompt',prompt)
-
+        print("Generating with SPiC-E!!!")
+        # TODO (ES): Here is where we need to use SPiC-E!
+        model_kwargs = dict(texts=[prompt] * batch_size)
+        model_kwargs['cond'] = torch.unsqueeze(guidance_shape[0].to(device).detach(), 0).repeat(batch_size, 1, 1)
         latents = sample_latents(
             batch_size=batch_size,
             model=model,
             diffusion=diffusion,
             guidance_scale=guidance_scale,
-            model_kwargs=dict(texts=[prompt] * batch_size),
+            model_kwargs=model_kwargs,
             progress=True,
             clip_denoised=True,
             use_fp16=True,
@@ -132,6 +143,21 @@ class GaussianDreamer(BaseLift3DSystem):
             sigma_max=160,
             s_churn=0,
         )
+        #latents = sample_latents(
+        #    batch_size=batch_size,
+        #    model=model,
+        #    diffusion=diffusion,
+        #    guidance_scale=guidance_scale,
+        #    model_kwargs=dict(texts=[prompt] * batch_size),
+        #    progress=True,
+        #    clip_denoised=True,
+        #    use_fp16=True,
+        #    use_karras=True,
+        #    karras_steps=64,
+        #    sigma_min=1e-3,
+        #    sigma_max=160,
+        #    s_churn=0,
+        #)
         render_mode = 'nerf' # you can change this to 'stf'
         size = 256 # this is the size of the renders; higher values take longer to render.
 
@@ -140,10 +166,15 @@ class GaussianDreamer(BaseLift3DSystem):
         self.shapeimages = decode_latent_images(xm, latents[0], cameras, rendering_mode=render_mode)
 
         pc = decode_latent_mesh(xm, latents[0]).tri_mesh()
+        # rotate coords 180 around y axis:
+        pc.verts = np.dot(pc.verts, np.array([[1, 0, 0], [0, -1, 0], [0, 0, 1]]))
 
+        #with open("/storage/etaisella/repos/SpicyGaussianDreamer/rotation fixing/spice_output.ply", "wb") as f:
+        #    pc.write_ply(f)
 
         skip = 1
         coords = pc.verts
+
         rgb = np.concatenate([pc.vertex_channels['R'][:,None],pc.vertex_channels['G'][:,None],pc.vertex_channels['B'][:,None]],axis=1) 
 
         coords = coords[::skip]
@@ -151,6 +182,7 @@ class GaussianDreamer(BaseLift3DSystem):
 
         self.num_pts = coords.shape[0]
         point_cloud = o3d.geometry.PointCloud()
+
         point_cloud.points = o3d.utility.Vector3dVector(coords)
         point_cloud.colors = o3d.utility.Vector3dVector(rgb)
         self.point_cloud = point_cloud
