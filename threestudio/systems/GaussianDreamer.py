@@ -112,11 +112,11 @@ class GaussianDreamer(BaseLift3DSystem):
         model.wrapped.backbone.make_ctrl_layers()
         model.wrapped.set_up_controlnet_cond()
         #model.load_state_dict(torch.load('./load/shapE_finetuned_with_330kdata.pth', map_location=device)['model_state_dict'])
-        model.load_state_dict(torch.load('/storage/etaisella/repos/SpicyGaussianDreamer/load/model_final.pt'))
+        model.load_state_dict(torch.load('./load/model_final.pt'))
         diffusion = diffusion_from_config_shape(load_config('diffusion'))
 
         # load guidance shape
-        guidance_path = '/storage/etaisella/repos/SpicyGaussianDreamer/spic-e/demo/latent_inference/demo_latent.pt'
+        guidance_path = './spic-e/demo/latent_inference/demo_latent.pt'
         print(f"Loading guidance shape from {guidance_path}")
         guidance_shape = torch.load(guidance_path)
 
