@@ -47,10 +47,10 @@ pip install -r requirements.txt
 git clone https://github.com/hustvl/GaussianDreamer.git 
 cd GaussianDreamer
 
+git submodule update --init --recursive
 pip install ./gaussiansplatting/submodules/diff-gaussian-rasterization
 pip install ./gaussiansplatting/submodules/simple-knn
 
-git clone https://github.com/openai/shap-e.git
 cd shap-e
 pip install -e .
 ```
