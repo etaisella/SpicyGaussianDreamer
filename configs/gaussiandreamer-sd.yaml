@@ -8,12 +8,13 @@ data:
   load_type: ${system.load_type}
   batch_size: 4
   eval_camera_distance: 4.0
-  camera_distance_range: [1.5, 4.0]
+  camera_distance_range: [1.5, 4.5]
   light_sample_strategy: "dreamfusion3dgs"
   height: 1024
   width: 1024
   eval_height: 1024
   eval_width: 1024
+  eval_elevation_deg: 30 # just to check it works
   # elevation_range: [-10 , 80]
 system_type: "gaussiandreamer-system"
 system:
@@ -54,6 +55,7 @@ system:
       eps: 1.e-15
 
 trainer:
+  #max_steps: 1200
   max_steps: 1200
   log_every_n_steps: 1
   num_sanity_val_steps: 0

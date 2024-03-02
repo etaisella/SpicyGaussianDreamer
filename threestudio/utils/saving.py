@@ -414,6 +414,12 @@ class SaverMixin:
                 imgs.append(f)
         imgs = sorted(imgs, key=lambda f: int(matcher.search(f).groups()[0]))
         imgs = [cv2.imread(os.path.join(img_dir, f)) for f in imgs]
+        
+        # save imgs to a subfolder:
+        img_dir = os.path.join(self.get_save_dir(), f"{filename}_img_sequence")
+        os.makedirs(img_dir, exist_ok=True)
+        for i, img in enumerate(imgs):
+            cv2.imwrite(os.path.join(img_dir, f"{i}.png"), img)
 
         if save_format == "gif":
             imgs = [cv2.cvtColor(i, cv2.COLOR_BGR2RGB) for i in imgs]

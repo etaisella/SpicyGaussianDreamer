@@ -121,7 +121,7 @@ class GaussianDreamer(BaseLift3DSystem):
         guidance_shape = torch.load(guidance_path)
 
         batch_size = 1
-        guidance_scale = 7.5
+        guidance_scale = 5.5
         prompt = str(self.cfg.prompt_processor.prompt)
         print('prompt',prompt)
         print("Generating with SPiC-E!!!")
@@ -432,7 +432,8 @@ class GaussianDreamer(BaseLift3DSystem):
 
     def test_step(self, batch, batch_idx):
         only_rgb = True
-        bg_color = [1, 1, 1] if False else [0, 0, 0]
+        #bg_color = [1, 1, 1] if False else [0, 0, 0]
+        bg_color = [1, 1, 1]
 
         testbackground_tensor = torch.tensor(bg_color, dtype=torch.float32, device="cuda")
 
@@ -543,6 +544,10 @@ class GaussianDreamer(BaseLift3DSystem):
         if self.load_type==0:
             o3d.io.write_point_cloud(self.get_save_path("shape.ply"), self.point_cloud)
             self.save_gif_to_file(self.shapeimages, self.get_save_path("shape.gif"))
+            # save all self.shapeimages to a subfolder:
+            os.makedirs(self.get_save_path("shape_images"), exist_ok=True)
+            for i, img in enumerate(self.shapeimages):
+                img.save(self.get_save_path(f"shape_images/{i}.png"))
         load_ply(save_path,self.get_save_path(f"it{self.true_global_step}-test-color.ply"))
         
 
