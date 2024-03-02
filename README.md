@@ -40,12 +40,12 @@ Colab demo: [![Open In Colab](https://colab.research.google.com/assets/colab-bad
 **Installation**
 Install [3D Gaussian Splatting](https://github.com/graphdeco-inria/gaussian-splatting) and [Shap-E](https://github.com/openai/shap-e#usage) as fellow:
 ```
+git clone https://github.com/hustvl/GaussianDreamer.git 
+cd GaussianDreamer
+
 pip install torch==2.0.1+cu117 torchvision==0.15.2+cu117 torchaudio==2.0.2 --index-url https://download.pytorch.org/whl/cu117
 pip install ninja
 pip install -r requirements.txt
-
-git clone https://github.com/hustvl/GaussianDreamer.git 
-cd GaussianDreamer
 
 git submodule update --init --recursive
 pip install ./gaussiansplatting/submodules/diff-gaussian-rasterization
