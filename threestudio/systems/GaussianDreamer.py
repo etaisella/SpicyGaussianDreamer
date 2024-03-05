@@ -80,8 +80,9 @@ class GaussianDreamer(BaseLift3DSystem):
         sh_degree: int = 0
         load_type: int = 0
         load_path: str = "./load/shapes/stand.obj"
-
-
+        shape_load_path: str = None
+        guidance_load_path: str = None
+        spice_model_load_path: str = None
 
     cfg: Config
     def configure(self) -> None:
@@ -89,6 +90,9 @@ class GaussianDreamer(BaseLift3DSystem):
         self.sh_degree =self.cfg.sh_degree
         self.load_type =self.cfg.load_type
         self.load_path = self.cfg.load_path
+        self.shape_load_path = self.cfg.shape_load_path
+        self.guidance_load_path = self.cfg.guidance_load_path
+        self.spice_model_load_path = self.cfg.spice_model_load_path
 
         self.gaussian = GaussianModel(sh_degree = self.sh_degree)
         bg_color = [1, 1, 1] if False else [0, 0, 0]
@@ -111,53 +115,42 @@ class GaussianDreamer(BaseLift3DSystem):
         model = load_model('text300M', device=device)
         model.wrapped.backbone.make_ctrl_layers()
         model.wrapped.set_up_controlnet_cond()
-        #model.load_state_dict(torch.load('./load/shapE_finetuned_with_330kdata.pth', map_location=device)['model_state_dict'])
-        model.load_state_dict(torch.load('./load/model_final.pt'))
+        model.load_state_dict(torch.load(self.spice_model_load_path))
         diffusion = diffusion_from_config_shape(load_config('diffusion'))
 
         # load guidance shape
-        guidance_path = './spic-e/demo/latent_inference/demo_latent.pt'
+        guidance_path = self.guidance_load_path
         print(f"Loading guidance shape from {guidance_path}")
         guidance_shape = torch.load(guidance_path)
 
         batch_size = 1
-        guidance_scale = 5.5
+        guidance_scale = 5.0
         prompt = str(self.cfg.prompt_processor.prompt)
         print('prompt',prompt)
         print("Generating with SPiC-E!!!")
         # TODO (ES): Here is where we need to use SPiC-E!
         model_kwargs = dict(texts=[prompt] * batch_size)
         model_kwargs['cond'] = torch.unsqueeze(guidance_shape[0].to(device).detach(), 0).repeat(batch_size, 1, 1)
-        latents = sample_latents(
-            batch_size=batch_size,
-            model=model,
-            diffusion=diffusion,
-            guidance_scale=guidance_scale,
-            model_kwargs=model_kwargs,
-            progress=True,
-            clip_denoised=True,
-            use_fp16=True,
-            use_karras=True,
-            karras_steps=64,
-            sigma_min=1e-3,
-            sigma_max=160,
-            s_churn=0,
-        )
-        #latents = sample_latents(
-        #    batch_size=batch_size,
-        #    model=model,
-        #    diffusion=diffusion,
-        #    guidance_scale=guidance_scale,
-        #    model_kwargs=dict(texts=[prompt] * batch_size),
-        #    progress=True,
-        #    clip_denoised=True,
-        #    use_fp16=True,
-        #    use_karras=True,
-        #    karras_steps=64,
-        #    sigma_min=1e-3,
-        #    sigma_max=160,
-        #    s_churn=0,
-        #)
+
+        if self.shape_load_path != 'None':
+            latents = torch.load(self.shape_load_path)
+        else:
+            latents = sample_latents(
+                batch_size=batch_size,
+                model=model,
+                diffusion=diffusion,
+                guidance_scale=guidance_scale,
+                model_kwargs=model_kwargs,
+                progress=True,
+                clip_denoised=True,
+                use_fp16=True,
+                use_karras=True,
+                karras_steps=64,
+                sigma_min=1e-3,
+                sigma_max=160,
+                s_churn=0,
+            )
+
         render_mode = 'nerf' # you can change this to 'stf'
         size = 256 # this is the size of the renders; higher values take longer to render.
 

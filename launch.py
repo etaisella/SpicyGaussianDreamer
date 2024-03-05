@@ -72,6 +72,7 @@ def main(args, extras) -> None:
         install_import_hook("threestudio", "typeguard.typechecked")
 
     import threestudio
+    import time
     from threestudio.systems.base import BaseSystem
     from threestudio.utils.callbacks import (
         CodeSnapshotCallback,
@@ -100,7 +101,10 @@ def main(args, extras) -> None:
     cfg = load_config(args.config, cli_args=extras, n_gpus=n_gpus)
 
     # set a different seed for each device
-    pl.seed_everything(cfg.seed + get_rank(), workers=True)
+    seed = cfg.seed + get_rank()
+    if args.random:
+        seed = time.time_ns() % (2 ** 32)
+    pl.seed_everything(seed, workers=True)
 
     dm = threestudio.find(cfg.data_type)(cfg.data)
     system: BaseSystem = threestudio.find(cfg.system_type)(
@@ -214,6 +218,10 @@ if __name__ == "__main__":
     group.add_argument("--validate", action="store_true")
     group.add_argument("--test", action="store_true")
     group.add_argument("--export", action="store_true")
+
+    parser.add_argument(
+        "--random", action="store_true", help="if true, uses current time to rondomize the seed"
+        )
 
     parser.add_argument(
         "--gradio", action="store_true", help="if true, run in gradio mode"
