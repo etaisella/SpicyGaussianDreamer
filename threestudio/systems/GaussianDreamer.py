@@ -154,8 +154,9 @@ class GaussianDreamer(BaseLift3DSystem):
         render_mode = 'nerf' # you can change this to 'stf'
         size = 256 # this is the size of the renders; higher values take longer to render.
 
-        cameras = create_pan_cameras(size, device)
+        cameras = create_pan_cameras(size, device, num_frames=20)
 
+        self.shapelatent = latents[0]
         self.shapeimages = decode_latent_images(xm, latents[0], cameras, rendering_mode=render_mode)
 
         pc = decode_latent_mesh(xm, latents[0]).tri_mesh()
@@ -377,9 +378,6 @@ class GaussianDreamer(BaseLift3DSystem):
 
 
 
-
-
-
     def validation_step(self, batch, batch_idx):
         out = self(batch)
         self.save_image_grid(
@@ -533,17 +531,27 @@ class GaussianDreamer(BaseLift3DSystem):
         )
         save_path = self.get_save_path(f"last_3dgs.ply")
         self.gaussian.save_ply(save_path)
+        # save shapelatent tensor to file
+        save_path = self.get_save_path(f"shapelatent.pt")
+        torch.save(self.shapelatent, save_path)
         # self.pointefig.savefig(self.get_save_path("pointe.png"))
         if self.load_type==0:
             o3d.io.write_point_cloud(self.get_save_path("shape.ply"), self.point_cloud)
             self.save_gif_to_file(self.shapeimages, self.get_save_path("shape.gif"))
+            # save mp4 as well as gif
+            self.save_img_sequence(
+                f"it{self.true_global_step}-test",
+                f"it{self.true_global_step}-test",
+                "(\d+)\.png",
+                save_format="mp4",
+                fps=30,
+                name="shape",
+                step=self.true_global_step,
+            )
             # save all self.shapeimages to a subfolder:
             os.makedirs(self.get_save_path("shape_images"), exist_ok=True)
             for i, img in enumerate(self.shapeimages):
                 img.save(self.get_save_path(f"shape_images/{i}.png"))
-        load_ply(save_path,self.get_save_path(f"it{self.true_global_step}-test-color.ply"))
-        
-
 
     def configure_optimizers(self):
         self.parser = ArgumentParser(description="Training script parameters")

@@ -1,6 +1,6 @@
 name: "gaussiandreamer-sd"
 tag: "${rmspace:${system.prompt_processor.prompt},_}"
-exp_root_dir: "outputs"
+exp_root_dir: "outputs/airplane_deabs_test"
 seed: 0
  
 data_type: "random-camera-datamodule"
@@ -21,8 +21,8 @@ system:
   load_type: 0 # 0: load from shape, 1: load from smpl
   load_path: "./load/shapes/stand.obj" # only used when load_type == 1
   shape_load_path: None # used to load SPiC-E output directly (i.e. no SPiC-E inference in pipeline)
-  spice_model_load_path: "./load/spic_e_model_chair_deabstraction.pt" # path to trained SPiC-E model
-  guidance_load_path: "./spic-e/demo/latent_inference/demo_latent.pt" # path to guidance latent for SPiC-E
+  spice_model_load_path: "./load/spic_e_model_airplane_deabstraction.pt" # path to trained SPiC-E model
+  guidance_load_path: "./load/chair_3a1b54325b3565e72ca4b544d68c52/latent_abstraction.pt" # path to guidance latent for SPiC-E
 
   radius: ${data.eval_camera_distance}
   sh_degree: 0
@@ -60,7 +60,7 @@ system:
 
 trainer:
   #max_steps: 1200
-  max_steps: 100
+  max_steps: 1200
   log_every_n_steps: 1
   num_sanity_val_steps: 0
   val_check_interval: 100

@@ -32,17 +32,17 @@ config="configs/gaussiandreamer-sd-chair-deabs-2.yaml"
 
 train_default "$prompt" "$config"
 
-prompt="a red velvet chair"
-config="configs/gaussiandreamer-sd-chair-deabs-2.yaml"
-
-train_default "$prompt" "$config"
-
-prompt="a red velvet chair"
-config="configs/gaussiandreamer-sd-chair-deabs-2.yaml"
-
-train_default "$prompt" "$config"
-
-prompt="a red velvet chair"
-config="configs/gaussiandreamer-sd-chair-deabs-2.yaml"
-
-train_default "$prompt" "$config"
+#prompt="a red velvet chair"
+#config="configs/gaussiandreamer-sd-chair-deabs-2.yaml"
+#
+#train_default "$prompt" "$config"
+#
+#prompt="a red velvet chair"
+#config="configs/gaussiandreamer-sd-chair-deabs-2.yaml"
+#
+#train_default "$prompt" "$config"
+#
+#prompt="a red velvet chair"
+#config="configs/gaussiandreamer-sd-chair-deabs-2.yaml"
+#
+#train_default "$prompt" "$config"

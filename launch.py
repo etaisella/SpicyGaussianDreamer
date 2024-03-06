@@ -100,6 +100,10 @@ def main(args, extras) -> None:
     cfg: ExperimentConfig
     cfg = load_config(args.config, cli_args=extras, n_gpus=n_gpus)
 
+    # set guidance
+    if args.guidance:
+        cfg.system.guidance_load_path = args.guidance
+
     # set a different seed for each device
     seed = cfg.seed + get_rank()
     if args.random:
@@ -203,6 +207,7 @@ def main(args, extras) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument("-g", "--guidance", help="path to guidance tensor file")
     parser.add_argument("--config", required=True, help="path to config file")
     parser.add_argument(
         "--gpu",
